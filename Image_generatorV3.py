@@ -107,7 +107,7 @@ def hexplot2(matflocon,k,name,xmm,ymm):
             y.append( hexagonal[1,b,c])
             z.append(matflocon[b,c])
      
-    if False: #si on cheke la glace
+    if True: #si on cheke la glace
         index_flocon = np.where(matflocon>= 1) #depende de ce qu on veu prendre la pour glace
         
     else:#si on regarde la vapeur
@@ -122,14 +122,14 @@ def hexplot2(matflocon,k,name,xmm,ymm):
 
 
     
-    fig = plt.figure(num=1,figsize=(10,7))#num=1 trouver un facon de fermer limage
+    #fig = plt.figure(num=1,figsize=(11*(1/np.sqrt(3)),10*(2/np.sqrt(3))))#num=1 trouver un facon de fermer limage
     
-    
+    fig = plt.figure(num=1,figsize=(11,10))
 
     
-    im=plt.hexbin(x,y,z,gridsize=(dimx,dimy-1),edgecolors='k',linewidths=0.5,cmap='viridis',bins='log')#vmax=0.02
+    im=plt.hexbin(x,y,z,gridsize=(dimx,dimy-1),edgecolors='k',linewidths=0.2,cmap='viridis',bins='log')#vmax=0.02,
     
-    plt.xlim(xmm[0]-5,xmm[1]+5)
+    plt.xlim(xmm[0]-13,xmm[1]+13)
     plt.ylim(ymm[0]-5,ymm[1]+5)
     
     
@@ -157,13 +157,13 @@ def hexplot2(matflocon,k,name,xmm,ymm):
     # plt.xlabel(r'Rayon du flocon: '+str(trusize/2)+' $\mu$m', {'color': 'k', 'fontsize': 75})
     
 
-    fig.colorbar(im)
+    # fig.colorbar(im)
     
     #plt.legend(['A simple line'])
     
-    fig.savefig('testfloconhex_'+name+'mx'+str(dimx)+'my'+str(dimy)+f+str(k)+'.png',dpi=320)
+    fig.savefig('testfloconhex_'+name+'mx'+str(dimx)+'my'+str(dimy)+f+str(k)+'.png',dpi=300)
     
-    plt.close(fig)
+    #plt.close(all()) #close all?
 
 
 
@@ -185,9 +185,8 @@ def hexplot2(matflocon,k,name,xmm,ymm):
 #type_data=True:
 
 
-debut=160 #normalement 0
-fin=300
-
+debut=398 #normalement 0
+fin=400
 frame=np.arange(debut, fin)
 
 
@@ -233,7 +232,7 @@ frame=np.arange(debut, fin)
         
 
 
-flocons=np.load(os.getcwd()+'\\Data_save\\Simulation_data_ice\\frameice'+str(510)+'.npy') #pour linste je veu zoomer sinon fin -1
+flocons=np.load(os.getcwd()+'\\Data_save\\Simulation_data_ice\\frameice'+str(fin-1)+'.npy') #pour linste je veu zoomer sinon fin -1
 
 matflocon=np.sum(flocons,axis=2)
     
@@ -252,7 +251,7 @@ for i in range(dimx):
     for j in range(dimy):
         hexagonal[:,i,j] = int(i)*n + int(j)*m
         
-index_flocon = np.where(matflocon >= 0)
+index_flocon = np.where(matflocon >= 1)
    
 flocon = hexagonal[:,index_flocon[0],index_flocon[1]]
     
@@ -286,7 +285,7 @@ for k in reversed(range(debut,fin)):
     #
     #Récupération de la matrice .npy
     
-    if False:    
+    if True:    
         # pour la glace
         flocons=np.load(os.getcwd()+'\\Data_save\\Simulation_data_ice\\frameice'+str(k)+'.npy')
         matflocon=np.sum(flocons,axis=2)
@@ -304,9 +303,7 @@ for k in reversed(range(debut,fin)):
      
 
 
-        
 
-    
     #matflocon=flocons[:,:,6]
     #fig = plt.figure()
     #plt.imshow(matflocon,interpolation='spline16',cmap='viridis') #Pour visualisation de la matrice
