@@ -6,7 +6,7 @@ import os
 #%% Définitions des variabes
 
 
-numberOfFrames = 25 #Détermine le nombre d'image final
+numberOfFrames = 20 #Détermine le nombre d'image final
 cwd = os.getcwd() 
 dataPath = r"\Data_save\Simulation_data_ice" # Les matrices de glaces
 frametPath =  r"\Data_save\Simulation_data_sup" # le framet
@@ -61,7 +61,7 @@ def hexplot(matflocon,k,xmm,ymm):
     
     plt.hexbin(x,y,z,gridsize=(dimx,dimy-1),linewidths=0.1,cmap='winter')#linewidths=0)
     
-    plt.xlim(xmm[0]-5,xmm[1]+5)
+    plt.xlim(xmm[0]-13,xmm[1]+13)
     plt.ylim(ymm[0]-5,ymm[1]+5)
     
     
@@ -91,10 +91,12 @@ def hexplot(matflocon,k,xmm,ymm):
 
     #plt.legend(['A simple line'])
     
-    fig.savefig('testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+f+str(k)+'.png',dpi=500)
+    path = os.getcwd()
+    my_path = os.path.join(path,"Data_save","Images",'testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+f+str(k)+'.png')
+    fig.savefig(str(my_path),dpi=300)
     
     plt.close(fig)
-
+    return dimx,dimy
 
 
 
@@ -154,10 +156,7 @@ def createImages(data,framet,numberOfFrames):
 #Vecteur avec les données, ainsi que le nombre de frames entre les images
 images,step = createImages(data,framet,numberOfFrames)
 
-#Conversion en seconde et en metres
-frame2seconds =  min(framet)*step #secondes/frame    
-pixel2meter = np.sqrt((2*9*np.sqrt(3)*(5*10**(-6))**2)/15814) #metres/pixel
-timeVec = np.array(range(0,len(images)))*frame2seconds
+
 #%% Utilise Hexaplot pour faire et sauvegarder la figure
 
 def plotFigures(images):        
@@ -202,46 +201,61 @@ def plotFigures(images):
         # matflocon=images[k][:,:,6]
         plt.figure()
         #plt.imshow(matflocon,interpolation='spline16',cmap='viridis') #Pour visualisation de la matrice
-        hexplot(matflocon,k,xmm,ymm)    
+        dimx,dimy = hexplot(matflocon,k,xmm,ymm) 
+    return dimx,dimy
 
-plotFigures(images)
+dimx,dimy = plotFigures(images)
 #%% Créé et sauvegare un video
 
 path = os.path.join(cwd,"Data_save","Images")
 
-def makeVideoFromImages(path):
+def makeVideoFromImages(path,dimx,dimy):
     folder = os.listdir(path)
     img_array = []
     for k in range(0,len(folder)):
         print("Video: frame {0:} of {1:}".format(k+1,len(folder)))
-        my_path = os.path.join(path,"frame"+str(k))
-        img = cv2.imread(str(my_path)+'.png')
+    
+        
+        my_path = os.path.join(path,'testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+'frame'+str(k)+'.png')
+        # my_path = os.path.join(path,"frame"+str(k))
+        img = cv2.imread(str(my_path))
         height, width, layers = img.shape
         size = (width,height)
         img_array.append(img)
+        
     
-    out = cv2.VideoWriter('VideoDuFlocon.avi',cv2.VideoWriter_fourcc(*'DIVX'), 17, size)
+    height, width, layers = img_array[0].shape
+    size = (width,height)
+    
+    out = cv2.VideoWriter(cwd+'\\'+'VideoDuFlocon.avi',cv2.VideoWriter_fourcc(*'DIVX'), 17, size)
     
     for i in range(len(img_array)):
         out.write(img_array[i])
     out.release()       
 
-makeVideoFromImages(path)    
+makeVideoFromImages(path,dimx,dimy)    
 
 #%% Lit les images sauvegarder
 #   Pour en faire une liste
 
 del images 
-
+#%%
 dataPath = r"\Data_save\Images"
+
 def loadPLottedImages(cwd,dataPath):
     dataFolder = os.listdir(cwd + dataPath)
     images = []
-    for i in range(0,len(dataFolder)) :
-        img = cv2.imread(cwd + dataPath +"\\"+ "frame"+str(i)+".png")
-        img = img[350:1850,350:1850,:]
+    for k in range(0,len(dataFolder)):
+        my_path = os.path.join(cwd+dataPath,'testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+'frame'+str(k)+'.png')
+        img = cv2.imread(my_path)
+        img = img[180:1050,220:1620,:]
+        # img = img[250:1740,400:2650,:]
+        
         images.append((img.astype(np.uint8)))
+    
+    
     return images
+
 
 #Images hexplot non processed
 images = loadPLottedImages(cwd,dataPath)
@@ -258,27 +272,27 @@ def preProcessImages(images):
     
     i=0 # index zéro est différent
     gray[i] = cv2.cvtColor(images[i],cv2.COLOR_BGR2GRAY)
-    area[i] = np.where(gray[i]>200,0,gray[i]).astype(bool).astype(np.uint8)*255
-    perimeter[i]=cv2.Canny(area[i],100,200).astype(np.uint8)
+    area[i] = np.where(gray[i]<50,0,gray[i]).astype(bool).astype(np.uint8)*255
+    perimeter[i]=cv2.Canny(area[i],1,1).astype(np.uint8)
     # début de la boucle
     for i in range(1,len(images)):
         # on converte en grayscale
         gray[i] = cv2.cvtColor(images[i],cv2.COLOR_BGR2GRAY)
         # On remplie le flocon et tout le reste est 0
-        area[i] = np.where(gray[i]>200,0,gray[i]).astype(bool).astype(np.uint8)*255
+        area[i] = np.where(gray[i]<50,0,gray[i]).astype(bool).astype(np.uint8)*255
         # on fait un edge detection
-        perimeter[i]  = cv2.Canny(area[i],100,200).astype(np.uint8)
+        perimeter[i]  = cv2.Canny(area[i],1,1).astype(np.uint8)
     
     plt.imshow(area[-1],cmap = 'gray')      
     
-    plt.subplots()
+    plt.subplots(figsize=[40,30])
     plt.subplot(121)
     plt.imshow(area[-1],cmap = 'gray'), plt.xticks([]), plt.yticks([])
-    plt.title('Matrice de surface', fontsize=50)
+    plt.title('Matrice de surface', fontsize=40)
     
     plt.subplot(122)
     plt.imshow(perimeter[-1],cmap = 'gray'), plt.xticks([]), plt.yticks([])
-    plt.title('Matrice de périmètre', fontsize=50)
+    plt.title('Matrice de périmètre', fontsize=40)
     
     plt.savefig('Images')
     plt.show()
@@ -286,11 +300,14 @@ def preProcessImages(images):
 
 #Matrices d'aires et de perimetre
 area,perimeter = preProcessImages(images)
+
+#Conversion en seconde et en metres
+
     
 #%% On calcule le peri et aire en faisant une sommation
 #  Puis sauvegarde une matrice pour l'analyse par Dider
 
-def calulatePerimeterAndArea(perimeter,area,pixel2meter,timeVec):
+def calulatePerimeterAndArea(perimeter,area,timeVec):
     perimeterVec = [None]*len(area)
     areaVec = [None]*len(area)
     
@@ -298,6 +315,10 @@ def calulatePerimeterAndArea(perimeter,area,pixel2meter,timeVec):
         perimeterVec[i] = np.sum(perimeter[i]/255)
         areaVec[i] = np.sum(area[i]/255)
     
+ 
+    pixel2meter = np.sqrt((19*6*np.sqrt(3)*(5*10**(-6))**2)/areaVec[0]) #metres/pixel
+
+
     perimeterVec = np.array(perimeterVec)*pixel2meter
     areaVec = np.array(areaVec)*pixel2meter**2   
     
@@ -306,7 +327,10 @@ def calulatePerimeterAndArea(perimeter,area,pixel2meter,timeVec):
     np.save('DATA',DATA)
     # os.rmdir(os.path.join(cwd,"Data_save","Images"))
     
-calulatePerimeterAndArea(perimeter,area,pixel2meter,timeVec)
+frame2seconds =  min(framet)*step #secondes/frame
+timeVec = np.array(range(0,len(images)))*frame2seconds   
+    
+calulatePerimeterAndArea(perimeter,area,timeVec)
 # END
 
 #%%
