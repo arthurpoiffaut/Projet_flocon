@@ -248,7 +248,7 @@ def loadPLottedImages(cwd,dataPath):
     for k in range(0,len(dataFolder)):
         my_path = os.path.join(cwd+dataPath,'testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+'frame'+str(k)+'.png')
         img = cv2.imread(my_path)
-        img = img[180:1050,220:1620,:]
+        img = img[400:2600,410:2950,:]
         # img = img[250:1740,400:2650,:]
         
         images.append((img.astype(np.uint8)))
