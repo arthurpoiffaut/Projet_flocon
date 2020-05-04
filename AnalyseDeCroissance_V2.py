@@ -10,7 +10,7 @@ numberOfFrames = 20 #Détermine le nombre d'image final
 cwd = os.getcwd() 
 dataPath = r"\Data_save\Simulation_data_ice" # Les matrices de glaces
 frametPath =  r"\Data_save\Simulation_data_sup" # le framet
-
+plt.rcParams["figure.figsize"] = (11,10)
 #%%
 #La fonction Hexaplot crée les figure à pratir des données
 #Puis les enregistrent en images.
@@ -54,7 +54,7 @@ def hexplot(matflocon,k,xmm,ymm):
 
 
     
-    fig = plt.figure(num=1,figsize=(10,10))#num=1 trouver un facon de fermer limage
+    fig = plt.figure(num=1,figsize=(5,10))#num=1 trouver un facon de fermer limage
     
     
 
@@ -248,7 +248,7 @@ def loadPLottedImages(cwd,dataPath):
     for k in range(0,len(dataFolder)):
         my_path = os.path.join(cwd+dataPath,'testfloconhex_'+'mx'+str(dimx)+'my'+str(dimy)+'frame'+str(k)+'.png')
         img = cv2.imread(my_path)
-        img = img[180:1050,220:1620,:]
+        img = img[400:2600,410:2950,:]
         # img = img[250:1740,400:2650,:]
         
         images.append((img.astype(np.uint8)))
